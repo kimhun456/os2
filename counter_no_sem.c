@@ -6,6 +6,13 @@
 
 int count=0;
 
+
+
+/*
+
+
+this function is runned by phreads
+*/
 void* count_plus(void *data)
 {
 
