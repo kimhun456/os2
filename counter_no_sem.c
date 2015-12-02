@@ -1,46 +1,53 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 
 int count=0;
 
-void *count_plus(void *data)
+void* count_plus(void *data)
 {
 
-	int tmp;
+    pthread_t self;
+    self = pthread_self();
+    int tmp;
+    void * tmp2;
 
-	int* id = (int*) data;
 
-	printf("Thread number %d is Created. \n",id);
+    printf("Thread id %8u is Created. \n",self);
 
-	while(1)
-	{
+    while(count <1000)
+    {
 
-		sleep(1);
-		tmp = count;
-		tmp = tmp+1;
-		count = tmp;
 
-		printf("Thread %d count : %d . \n",id,count);
+        sleep(1);
+        tmp = count;
+        tmp = tmp+1;
+        count = tmp;
 
-	}
+        printf("Thread id :%8u count : %d . \n",self,count);
+
+
+    }
+    return tmp2;
 }
 
 
 int main(){
 
-	int i=0;
+    int i=0;
 
-	pthread_t pthread[3];
+    pthread_t pthread[3];
 
-	for(i=0; i<3; i++){
+    for(i=0; i<3; i++){
+        pthread_create(&pthread[i], NULL ,count_plus ,NULL);
+    }
 
-		pthread_create(&pthread[i], NULL ,count_plus ,i+1);
-	}
+    for(i=0;i<3;i++){
+        pthread_join(pthread[i],NULL);
+    }
+    printf("system down");
 
-	pthread_join(pthread[0],NULL);
-	pthread_join(pthread[1],NULL);
-	pthread_join(pthread[2],NULL);
-	printf("system down");
-
-	return 0;
+    return 0;
 }

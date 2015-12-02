@@ -1,54 +1,58 @@
 #include <stdio.h>
 #include <pthread.h>
-#include <semaphore.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int count=0;
-sem_t sem;
 
-void *count_plus(void *data)
+void* count_plus(void *data)
 {
-	pthread_t id;
-	int tmp;
-	id = pthread_self();
-	int i=0;
 
-	printf("Thread %lu is Created. \n",id);
+    pthread_t self;
+    self = pthread_self();
+    int tmp;
+    void * tmp2;
 
-	while(1)
-	{
-		sem_wait(&sem);
-		sleep(1);
-		tmp = count;
-		tmp = tmp+1;
-		count = tmp;
 
-		printf("Thread %lu count : %d . \n",id,count);
-		sem_post(&sem);
-		usleep(1);
-	}
+    printf("Thread id %8u is Created. \n",self);
+
+    while(count <1000)
+    {
+       	pthread_mutex_lock(&mutex);
+
+        sleep(1);
+        tmp = count;
+        tmp = tmp+1;
+        count = tmp;
+
+        printf("Thread id :%8u count : %d . \n",self,count);
+       	pthread_mutex_unlock(&mutex);
+
+    }
+    return tmp2;
 }
 
 
 int main(){
 
-	int i=0;
+    int i=0;
 
-	pthread_t pthread[3];
+    pthread_t pthread[3];
 
-	if(sem_init(&sem,0,1) == -1 ){
-		perror("error occurs");
-		exit(0);
-	}
+    for(i=0; i<3; i++){
 
-	for(i=0; i<3; i++){
-		pthread_create(&pthread[i],NULL,count_plus,NULL);
+        pthread_create(&pthread[i], NULL ,count_plus ,NULL);
 
-	}
-	pthread_join(pthread[0],NULL);
-	pthread_join(pthread[1],NULL);
-	pthread_join(pthread[2],NULL);
+    }
 
-	return 0;
+    for(i=0;i<3;i++){
+        pthread_join(pthread[i],NULL);
+    }
+
+
+   	pthread_mutex_destroy(&mutex);
+    printf("system down");
+
+    return 0;
 }
