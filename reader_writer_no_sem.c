@@ -3,124 +3,93 @@
 #include <semaphore.h>
 #include <unistd.h>
 
-#define BOOKPAGES 10000
-#define READ_THREADS 2
+
+/*
+  변수들을 설정해준다.
+
+*/
+#define READ_THREADS 4
 #define WRITE_THREADS 1
 
-sem_t read_mutex;
-sem_t write_mutex;
 
 
+/*
+  writer가 쓰게될 count를 정의한다.
+  Reader 또한 count를 읽게 된다.
+*/
 int readCount=0;
 int count = 0;
-int books[BOOKPAGES];
 
-int currentPage = 0;
 
+
+/*
+  writer 쓰레드가 실행할 함수이다.
+*/
 void * Writer(void *arg)
 {
+    //id를 받아온다.
     int id = (int)arg;
+
     while(1){
       sleep(1);
 
-      printf("Writer %d is try to enter\n",id);
-      sem_wait(&write_mutex);
+      // write 부분
+      printf( "Writer %d is writting  %d  \n", id, count++ + 1);
 
-      books[currentPage++] = count++;
-
-      printf( "Writer %d is writting  %d  \n",id,count);
-
-
-      sem_post(&write_mutex);
-
-      printf("Writer %d is leaving \n",id);
     }
 
 }
 
-
-
+/*
+  Reader 쓰레드가 실행 할 함수이다.
+*/
 void *Reader(void *arg)
 {
 
-
+    //id를 받아온다.
     int id=(int)arg;
-    int i;
 
     while(1){
         sleep(1);
 
-        printf("Reader %d is try to enter\n",id);
-
-        sem_wait(&read_mutex);
-        readCount++;
-        if(readCount==1)
-        {
-            sem_wait(&write_mutex);
 
 
-            printf("Reader %d is reading\n",id);
-        }
-        sem_post(&read_mutex);
+        printf(" Reader %d's read data : %d \n", id, count);
 
 
-        // read하는 부분!!!!
-        printf(" Reader %d's read data : ",id);
-        for(i=0;i<count;i++){
-          printf("%3d" ,books[i]);
-        }
-        printf("\n");
-
-        sem_wait(&read_mutex);
-
-        readCount--;
-        if(readCount==0)
-        {
-            printf("Reader %d is leaving",id);
-            sem_post(&write_mutex);
-        }
-        sem_post(&read_mutex);
 
     }
 
 
 }
-
-
-
 
 
 int main()
 {
     int i=0;
 
-    sem_init(&read_mutex,0,1);
-    sem_init(&write_mutex,0,1);
 
+    // pthreads를 선언한다.
     pthread_t Reader_threads[100];
     pthread_t Writer_threads[100];
 
-    // int a = 1;
-    // int b = 2;
-    //
-    // pthread_create(&Reader_threads[0],NULL,Reader,(void *)a);
-    // pthread_create(&Reader_threads[1],NULL,Reader,(void *)b);
-    // pthread_create(&Writer_threads[0],NULL,Writer,(void *)a);
-    //
-    // pthread_join(Reader_threads[0],NULL);
-    // pthread_join(Reader_threads[1],NULL);
-    // pthread_join(Reader_threads[0],NULL);
 
-
+    // read_pthread를 생성한다.
     for(i=0;i<READ_THREADS;i++)
     {
         pthread_create(&Reader_threads[i],NULL,Reader,(void *)i);
     }
+
+    // write Pthread를 생성한다.
     for(i=0;i<WRITE_THREADS;i++)
     {
         pthread_create(&Writer_threads[i],NULL,Writer,(void *)i);
     }
 
+
+    /*
+      pthread_join을 이용하여 쓰레드가 끝나기를 기다린다.
+    */
     for(i=0;i<WRITE_THREADS;i++)
     {
         pthread_join(Writer_threads[i],NULL);
@@ -131,8 +100,8 @@ int main()
         pthread_join(Reader_threads[i],NULL);
     }
 
-    sem_destroy(&write_mutex);
-    sem_destroy(&read_mutex);
+
+
 
     return 0;
 }
