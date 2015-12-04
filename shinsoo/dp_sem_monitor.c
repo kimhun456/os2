@@ -88,7 +88,9 @@ void take(int data){
   printf("Philosopher%d is Hungry :(\n",id);
 
   test(id);
-  if(state[id] != EATING) pthread_cond_wait(&self[id],&mutex_lock);
+  if(state[id] != EATING) {
+    pthread_cond_wait(&self[id],&mutex_lock);
+  }
   pthread_mutex_unlock(&mutex_lock);
 
 }
