@@ -21,7 +21,6 @@ sem_t empty;
 void *producer();
 void *consumer();
 
-
 int main(){
 
   int i;

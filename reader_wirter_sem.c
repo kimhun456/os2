@@ -2,7 +2,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
 
 /*
   변수들을 설정해준다.
